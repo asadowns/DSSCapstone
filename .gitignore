@@ -19,3 +19,7 @@ vignettes/*.pdf
 .httr-oauth
 raw/*
 *.zip
+*/twitter.txt
+*/blogs.txt
+*/news.txt
+*corpus
