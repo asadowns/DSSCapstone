@@ -30,10 +30,11 @@ predictNgram <- function(sentence) {
     select(count,prediction) %>%
     top_n(3, count) %>%
     select(prediction)
+  
   if (nrow(phraseMatch)>0) {
-    result1 <- as.character(phraseMatch[[1]][1])
-    result2 <- as.character(phraseMatch[[1]][2])
-    result3 <- as.character(phraseMatch[[1]][3])
+    result1 <- ifelse(!is.na(phraseMatch[[1]][1]), as.character(phraseMatch[[1]][1]), "the")
+    result2 <- ifelse(!is.na(phraseMatch[[1]][2]), as.character(phraseMatch[[1]][2]), "be")
+    result3 <- ifelse(!is.na(phraseMatch[[1]][3]), as.character(phraseMatch[[1]][3]), "to")
     results <- c(result1,result2,result3)
   }
   else if (strlength>1){
@@ -46,7 +47,6 @@ predictNgram <- function(sentence) {
     print('no prediction')
   }
 }
-
 
 shinyServer(
   function(input, output, session) {

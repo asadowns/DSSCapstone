@@ -6,6 +6,7 @@ library(SnowballC)
 library(ggplot2)  
 library(R.utils)
 library(stringr)
+library(slam)
 setwd("~/RProg/DSSCapstone")
 
 if (!file.exists('Coursera-SwiftKey.zip')) {
@@ -16,8 +17,8 @@ if (!file.exists('Coursera-SwiftKey.zip')) {
 if (!file.exists('raw')) {
   unzip('Coursera-SwiftKey.zip', exdir="./raw")
 }
-dirname <- 'full'
-percent <- 1
+dirname <- '10percent'
+percent <- 10
 if (!file.exists(dirname)) {
   dir.create(dirname)
   twitterFile <- file("raw/final/en_US/en_US.twitter.txt", "r")
@@ -85,7 +86,6 @@ plot1
 dtmBigram <- DocumentTermMatrix(corpus, list(tokenize = function(x) NgramTokenizer(x,2)))
 freqBigram <- sort(colSums(as.matrix(dtmBigram)), decreasing=TRUE)
 quantile(freqBigram, seq(0,1,0.1))
-frameBigram <- data.frame(word=names(freqBigram), freq=freqBigram)
 frameBigram <- transform(frameBigram, word = reorder(word, freq)) 
 frameBigram <- top_n(frameBigram,20,freq)
 plot2 <- ggplot(frameBigram, aes(word, freq)) + 
@@ -115,6 +115,10 @@ plot4 <- ggplot(frame4gram, aes(word, freq)) +
   theme(axis.text.x=element_text(angle=45, hjust=1))   
 plot4
 
+corpus2 <- corpus(corpus)
+test3 <- dfm(corpus2, ngrams = 5:5, what = "fastestword", concatenator=" ", toLower = TRUE, removePunct = TRUE, removeNumbers = TRUE, removeTwitter = TRUE)
+test4 <- colSums(test3[,])
+
 dtm5gram <- DocumentTermMatrix(corpus, list(tokenize = function(x) NgramTokenizer(x,5)))
 freq5gram <- sort(colSums(as.matrix(dtm5gram)), decreasing=TRUE)
 quantile(freq5gram, seq(0,1,0.1))
@@ -130,7 +134,7 @@ gramFreq <- list(freqBigram,freqTrigram,freq4gram,freq5gram)
 
 predictNgram <- function(sentence) {
   
-  maxLength <- 3
+  maxLength <- 5
   
   processed <- sentence %>% removeNumbers %>%
     removePunctuation() %>%

@@ -112,3 +112,93 @@ tdm <- TermDocumentMatrix(crude, control = list(tokenize = function(x) NgramToke
 inspect(tdm[,1:10])
 #inspect(removeSparseTerms(tdm[, 1:10], 0.7))
 
+test$combined2 <- with(test,paste(V2,V3,V4,V5))
+w5 <- tbl_df(test)
+result <- w5 %>% 
+  filter(V2=='a' & V3=='lot' & V4=='of' & V5=='the') %>%
+  select(V1,V6) %>%
+  top_n(1, V1)
+  
+result2 <- w5 %>% 
+  filter(combined2=='a lot of the') %>%
+  select(V1,V6) %>%
+  top_n(1, V1) %>%
+  select(V6)
+
+saveRDS()
+readRDS()
+
+w2 <- read.table('w2_.txt', comment.char='')
+w2$prediction <- w2[,ncol(w2)]
+w2$count <- w2$V1
+w2$predictor <- with(w2,V2)
+w2 <- subset(w2,select=c('count','predictor','prediction'))
+
+w3 <- read.table('w3_.txt', comment.char='')
+w3$prediction <- w3[,ncol(w3)]
+w3$count <- w3$V1
+w3$predictor <- with(w3,paste(V2,V3))
+w3 <- subset(w3,select=c('count','predictor','prediction'))
+
+w4 <- read.table('w4_.txt', comment.char='')
+w4$prediction <- w4[,ncol(w4)]
+w4$count <- w4$V1
+w4$predictor <- with(w4,paste(V2,V3,V4))
+w4 <- subset(w4,select=c('count','predictor','prediction'))
+
+w5 <- read.table('w5_.txt', comment.char='')
+w5$prediction <- w5[,ncol(w5)]
+w5$count <- w5$V1
+w5$predictor <- with(w5,paste(V2,V3,V4,V5))
+w5 <- subset(w5,select=c('count','predictor','prediction'))
+
+quantCorpus <- corpus(corpus)
+dfm <- dfm(quantCorpus, ngrams = 5:5, what = "fastestword", concatenator=" ", toLower = TRUE, removePunct = TRUE, removeNumbers = TRUE, removeTwitter = TRUE)
+sums5 <- colSums(dfm[,])
+n <- sum(sums5)
+n1 <- sum(sums5[sums5==1])
+n2 <- sum(sums5[sums5>1])
+p0 <- n1/n
+p2plus <- n2/n
+
+n5 <- data.frame(words=names(sums5[sums5>1]),count=sums5[sums5>1]))n5$predictor <- word(n5$words, 1,4)
+n5$prediction <- word(n5$words, -1)
+n5 <- subset(n5, select=c('counts,'prediction','predictor'))
+ngrams <- list(w2,w3,w4,w5)
+saveRDS(ngrams,file='ngrams.RDA')
+
+
+predictNgram <- function(sentence) {
+  maxLength <- 4
+  
+  processed <- sentence %>% removeNumbers %>%
+    removePunctuation() %>%
+    tolower() %>%
+    removeWords(stopwordsProfane) %>%
+    stripWhitespace() %>%
+    trim()
+  
+  strlength <- str_count(processed,"\\w+")
+  
+  if (strlength>maxLength) strlength <- maxLength
+  pattern <- paste(rep("\\w+\\s+",strlength-1),collapse = "",sep="")
+  pattern <- paste0(pattern,"\\w+$")
+  predictPhrase <- str_extract(processed,pattern)
+  phraseMatch <- ngrams[[strlength]] %>% 
+    filter(predictor==predictPhrase) %>%
+    select(count,prediction) %>%
+    arrange(desc(count))
+print(strlength)
+  if (nrow(phraseMatch)>0) {
+    print(phraseMatch)
+  }
+  else if (strlength>1){
+    pattern <- paste(replicate(strlength-2, "\\w+\\s+"), collapse = "")
+    pattern <- paste0(pattern,"\\w+$")
+    sentence <- str_extract(processed,pattern)
+    predictNgram(sentence)
+  }
+  else {
+    print('no prediction')
+  }
+}

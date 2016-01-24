@@ -3,11 +3,12 @@ library(shinyjs)
 
 shinyUI(
   fluidPage(align="center",
+            includeCSS("styles.css"),
             useShinyjs(),
             headerPanel("Text Prediction"),
             mainPanel(class="col-sm-offset-2",
                       h3("Please type or paste text into the box below"),
-                      h5("This application will predict the next word in your input. Note the top prediction "),
+                      h5("This application will predict the next word in your input. The single prediction is in the blue box below. The additional predictions in the other boxes are for demonstration purposes only."),
                       tags$textarea(id="text", class="form-control input-lg", label = "Input Text", value="enter text here", rows="4"),
                       span('Please wait several seconds for the algorithm to run.', class="help-block text-left"),
                       tags$hr(),
